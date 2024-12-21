@@ -1,49 +1,93 @@
-import random
+from metaflow import FlowSpec, step
 
-class Mahasiswa:
-    def __init__(self, nama, spp):
-        self.nama = nama
-        self.spp = spp
-        self.nilai_tugas = 0
-        self.nilai_ujian = 0
-        self.nilai_akhir = 0
+class InformatikaKuliahFlow(FlowSpec):
 
+    @step
+    def start(self):
+        """
+        Mulai proses alur kuliah informatika.
+        """
+        print("Memulai proses mengikuti kuliah informatika.")
+        self.next(self.bayar_spp)
+
+    @step
     def bayar_spp(self):
-        print(f"{self.nama} telah membayar SPP sebesar {self.spp} IDR.")
+        """
+        Langkah pertama: Membayar SPP
+        """
+        self.spp_terbayar = True
+        print("SPP berhasil dibayarkan.")
+        self.next(self.konfirmasi_spp)
 
-    def mengikuti_kuliah(self):
-        print(f"{self.nama} sedang mengikuti kuliah Informatika...")
+    @step
+    def konfirmasi_spp(self):
+        """
+        Langkah kedua: Konfirmasi pembayaran SPP dan Aktivasi akun mahasiswa
+        """
+        if self.spp_terbayar:
+            self.spp_dikonfirmasi = True
+            print("Pembayaran SPP terkonfirmasi. Akun mahasiswa aktif.")
+        else:
+            self.spp_dikonfirmasi = False
+            print("Gagal konfirmasi SPP. Proses berhenti.")
+        self.next(self.mengikuti_perkuliahan)
 
-    def mengerjakan_tugas(self):
-        # Simulasi nilai tugas
-        self.nilai_tugas = random.randint(60, 100)
-        print(f"{self.nama} telah mengerjakan tugas dengan nilai: {self.nilai_tugas}")
+    @step
+    def mengikuti_perkuliahan(self):
+        """
+        Langkah ketiga: Mengikuti perkuliahan.
+        """
+        if self.spp_dikonfirmasi:
+            print("Mahasiswa mengikuti perkuliahan sesuai jadwal.")
+            self.perkuliahan_selesai = True
+        else:
+            print("Tidak dapat mengikuti perkuliahan karena SPP tidak terkonfirmasi.")
+            self.perkuliahan_selesai = False
+        self.next(self.ujian_akhir)
 
-    def mengikuti_ujian(self):
-        # Simulasi nilai ujian
-        self.nilai_ujian = random.randint(60, 100)
-        print(f"{self.nama} telah mengikuti ujian dengan nilai: {self.nilai_ujian}")
+    @step
+    def ujian_akhir(self):
+        """
+        Langkah keempat: Mengikuti ujian akhir semester.
+        """
+        if self.perkuliahan_selesai:
+            print("Mahasiswa mengikuti ujian akhir semester.")
+            self.ujian_selesai = True
+        else:
+            print("Mahasiswa tidak bisa mengikuti ujian karena tidak menyelesaikan perkuliahan.")
+            self.ujian_selesai = False
+        self.next(self.pengolahan_nilai)
 
-    def hitung_nilai_akhir(self):
-        # Menghitung nilai akhir (misalnya, 40% tugas dan 60% ujian)
-        self.nilai_akhir = (0.4 * self.nilai_tugas) + (0.6 * self.nilai_ujian)
-        print(f"Nilai akhir {self.nama} adalah: {self.nilai_akhir:.2f}")
+    @step
+    def pengolahan_nilai(self):
+        """
+        Langkah kelima: Pengolahan nilai ujian.
+        """
+        if self.ujian_selesai:
+            print("Nilai ujian diproses.")
+            self.nilai_diproses = True
+        else:
+            print("Nilai tidak diproses karena mahasiswa tidak mengikuti ujian.")
+            self.nilai_diproses = False
+        self.next(self.mendapatkan_khs)
 
-def main():
-    # Input nama mahasiswa dan SPP
-    nama_mahasiswa = input("Masukkan nama mahasiswa: ")
-    spp = int(input("Masukkan jumlah SPP yang harus dibayar (dalam IDR): "))
+    @step
+    def mendapatkan_khs(self):
+        """
+        Langkah terakhir: Mendapatkan Kartu Hasil Studi (KHS)
+        """
+        if self.nilai_diproses:
+            print("Mahasiswa berhasil mendapatkan KHS.")
+        else:
+            print("Mahasiswa tidak mendapatkan KHS karena nilai tidak diproses.")
+        self.next(self.end)
 
-    # Membuat objek mahasiswa
-    mahasiswa = Mahasiswa(nama_mahasiswa, spp)
+    @step
+    def end(self):
+        """
+        Mengakhiri proses.
+        """
+        print("Proses mengikuti kuliah informatika selesai.")
 
-    # Proses mengikuti kuliah
-    mahasiswa.bayar_spp()
-    mahasiswa.mengikuti_kuliah()
-    mahasiswa.mengerjakan_tugas()
-    mahasiswa.mengikuti_ujian()
-    mahasiswa.hitung_nilai_akhir()
-
-if __name__ == "__main__":
-    main()
-
+if __name__ == '__main__':
+    InformatikaKuliahFlow()
